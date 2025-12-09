@@ -29,17 +29,17 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        working-directory: ./headapps/nextjs-starter
+        working-directory: .
         run: pnpm install
 
       - name: Build Next.js project
-        working-directory: ./headapps/nextjs-starter
+        working-directory: .
         run: pnpm run build
 
       - name: Package source code for Veracode
         run: |
           mkdir veracode-package
-          rsync -av --progress headapps/nextjs-starter/ veracode-package \
+          rsync -av --progress . veracode-package \
             --exclude node_modules \
             --exclude .next \
             --exclude .git \
