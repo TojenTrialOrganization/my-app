@@ -1,36 +1,36 @@
 
-// app/page.tsx
-'use client';
+// app/api/vuln/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { exec } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-import { useSearchParams } from 'next/navigation';
+export async function GET(req: NextRequest) {
+  // ❌ CWE-798: Hardcoded credential
+  const DB_PASSWORD = 'P@ssw0rd123!'; // Hardcoded secret
 
-export default function Home() {
-  const params = useSearchParams();
+  // Query parameters controlled by the user
+  const cmd = req.nextUrl.searchParams.get('cmd') ?? 'echo safe';
+  const filename = req.nextUrl.searchParams.get('file') ?? '../../etc/passwd';
 
-  // User-controlled inputs
-  const rawHtml = params.get('content') ?? '<p>Welcome!</p>';
-  const rawHref = params.get('link') ?? 'javascript:alert("xss")';
+  // ❌ CWE-78: OS command injection - passes user input to exec()
+  exec(cmd, (error, stdout, stderr) => {
+    // Intentionally ignore error handling here to keep the sink obvious
+  });
 
-  return (
-    <main style={{ padding: 24 }}>
-      <h1>Veracode SAST Demo (Vulnerable)</h1>
+  // ❌ CWE-22: Path traversal - joins user-supplied relative path
+  const target = join(process.cwd(), filename);
+  let fileContent = '';
+  try {
+    fileContent = readFileSync(target, 'utf8');
+  } catch {
+    fileContent = '(read error)';
+  }
 
-      <section>
-        <h2>Untrusted HTML (XSS)</h2>
-        {/* ❌ CWE-79: injecting untrusted HTML */}
-        <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
-      </section>
-
-      <section style={{ marginTop: 16 }}>
-        <h2>Untrusted Link (javascript:)</h2>
-        {/* ❌ CWE-79/URL-based XSS: untrusted href */}
-        <a href={rawHref}>Click me</a>
-      </section>
-
-      <p style={{ marginTop: 24, color: 'gray' }}>
-        Try: <code>/?content=%3Cscript%3Ealert(1)%3C/script%3E</code> or{' '}
-        <code>/?link=javascript:alert("xss")</code>
-      </p>
-    </main>
-  );
-}
+  return NextResponse.json({
+    message: 'Vulnerable endpoint',
+    password: DB_PASSWORD, //    password: DB_PASSWORD, // surface the hardcoded secret
+    cmdEcho: cmd,
+    fileRead: target,
+    fileContentSnippet: fileContent.slice(0, 60),
+  });
