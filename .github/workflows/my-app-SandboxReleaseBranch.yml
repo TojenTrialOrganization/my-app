@@ -4,10 +4,10 @@ run-name: Veracode Sandbox Scan - ${{ github.event.repository.name }}.${{ github
 on:
   push:
     branches:
-      - 'Test*'        # This should be changed to Release
+      - 'Release*'        # This should be changed to Release
   pull_request:
     branches:
-      - 'Test*'        # This should be changed to Release
+      - 'Release*'        # This should be changed to Release
   workflow_dispatch:       # Allow manual trigger
 
 jobs:
