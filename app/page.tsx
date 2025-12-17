@@ -34,3 +34,4 @@ export async function GET(req: NextRequest) {
     fileRead: target,
     fileContentSnippet: fileContent.slice(0, 60),
   });
+}
