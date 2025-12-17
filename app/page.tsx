@@ -8,30 +8,23 @@ export default function Home() {
   const params = useSearchParams();
 
   // User-controlled inputs
-  const rawHtml = params.get('content') ?? '<p>Welcome to Next.js!</p>';
-  const rawLink = params.get('link') ?? 'javascript:alert("xss")';
+  const rawHtml = params.get('content') ?? '<p>Welcome!</p>';
+  const rawHref = params.get('link') ?? 'javascript:alert("xss")';
 
-  // ❌ Intentionally unsafe: inject raw HTML directly into the DOM.
-  // This is a classic DOM XSS sink that SAST tools flag.
   return (
     <main style={{ padding: 24 }}>
-      <h1>Hello World (Vulnerable)</h1>
+      <h1>Veracode SAST Demo (Vulnerable)</h1>
 
       <section>
-        <h2>Untrusted HTML</h2>
-        <div
-          dangerouslySetInnerHTML={{
-            __html: rawHtml, // CWE-79: Improper Neutralization of Input During Web Page Generation (XSS)
-          }}
-        />
+        <h2>Untrusted HTML (XSS)</h2>
+        {/* ❌ CWE-79: injecting untrusted HTML */}
+        <div dangerouslySetInnerHTML={{ __html: rawHtml }} />
       </section>
 
       <section style={{ marginTop: 16 }}>
-        <h2>Untrusted Link</h2>
-        {/* ❌ Untrusted "href" attribute can allow javascript: URLs */}
-        <a href={rawLink} style={{ color: 'blue', textDecoration: 'underline' }}>
-          Untrusted link (click me)
-        </a>
+        <h2>Untrusted Link (javascript:)</h2>
+        {/* ❌ CWE-79/URL-based XSS: untrusted href */}
+        <a href={rawHref}>Click me</a>
       </section>
 
       <p style={{ marginTop: 24, color: 'gray' }}>
