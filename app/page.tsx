@@ -1,66 +1,43 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+
+// app/page.tsx
+'use client';
+
+import { useSearchParams } from 'next/navigation';
 
 export default function Home() {
+  const params = useSearchParams();
+
+  // User-controlled inputs
+  const rawHtml = params.get('content') ?? '<p>Welcome to Next.js!</p>';
+  const rawLink = params.get('link') ?? 'javascript:alert("xss")';
+
+  // ❌ Intentionally unsafe: inject raw HTML directly into the DOM.
+  // This is a classic DOM XSS sink that SAST tools flag.
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main style={{ padding: 24 }}>
+      <h1>Hello World (Vulnerable)</h1>
+
+      <section>
+        <h2>Untrusted HTML</h2>
+        <div
+          dangerouslySetInnerHTML={{
+            __html: rawHtml, // CWE-79: Improper Neutralization of Input During Web Page Generation (XSS)
+          }}
         />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+
+      <section style={{ marginTop: 16 }}>
+        <h2>Untrusted Link</h2>
+        {/* ❌ Untrusted "href" attribute can allow javascript: URLs */}
+        <a href={rawLink} style={{ color: 'blue', textDecoration: 'underline' }}>
+          Untrusted link (click me)
+        </a>
+      </section>
+
+      <p style={{ marginTop: 24, color: 'gray' }}>
+        Try: <code>/?content=%3Cscript%3Ealert(1)%3C/script%3E</code> or{' '}
+        <code>/?link=javascript:alert("xss")</code>
+      </p>
+    </main>
   );
 }
