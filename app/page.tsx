@@ -1,37 +1,66 @@
+import Image from "next/image";
+import styles from "./page.module.css";
 
-// app/api/vuln/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { exec } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
-export async function GET(req: NextRequest) {
-  // ❌ CWE-798: Hardcoded credential
-  const DB_PASSWORD = 'P@ssw0rd123!'; // Hardcoded secret
-
-  // Query parameters controlled by the user
-  const cmd = req.nextUrl.searchParams.get('cmd') ?? 'echo safe';
-  const filename = req.nextUrl.searchParams.get('file') ?? '../../etc/passwd';
-
-  // ❌ CWE-78: OS command injection - passes user input to exec()
-  exec(cmd, (error, stdout, stderr) => {
-    // Intentionally ignore error handling here to keep the sink obvious
-  });
-
-  // ❌ CWE-22: Path traversal - joins user-supplied relative path
-  const target = join(process.cwd(), filename);
-  let fileContent = '';
-  try {
-    fileContent = readFileSync(target, 'utf8');
-  } catch {
-    fileContent = '(read error)';
-  }
-
-  return NextResponse.json({
-    message: 'Vulnerable endpoint',
-    password: DB_PASSWORD, //    password: DB_PASSWORD, // surface the hardcoded secret
-    cmdEcho: cmd,
-    fileRead: target,
-    fileContentSnippet: fileContent.slice(0, 60),
-  });
+export default function Home() {
+  return (
+    <div className={styles.page}>
+      <main className={styles.main}>
+        <Image
+          className={styles.logo}
+          src="/next.svg"
+          alt="Next.js logo"
+          width={100}
+          height={20}
+          priority
+        />
+        <div className={styles.intro}>
+          <h1>To get started, edit the page.tsx file.</h1>
+          <p>
+            Looking for a starting point or more instructions? Head over to{" "}
+            <a
+              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Templates
+            </a>{" "}
+            or the{" "}
+            <a
+              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Learning
+            </a>{" "}
+            center.
+          </p>
+        </div>
+        <div className={styles.ctas}>
+          <a
+            className={styles.primary}
+            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              className={styles.logo}
+              src="/vercel.svg"
+              alt="Vercel logomark"
+              width={16}
+              height={16}
+            />
+            Deploy Now
+          </a>
+          <a
+            className={styles.secondary}
+            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Documentation
+          </a>
+        </div>
+      </main>
+    </div>
+  );
 }
